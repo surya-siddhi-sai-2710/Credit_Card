@@ -34,3 +34,5 @@ camel:
   rest:
     context-path: /api
 
+server:
+  port: 8080

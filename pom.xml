@@ -91,10 +91,17 @@
 			<artifactId>Middleware-Utility</artifactId>
 			<version>1.0.1</version>
 		</dependency>
-		
-	<!--	<dependency>
+
+		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-test-spring-junit5</artifactId>
+			<version>3.18.3</version>
+			<scope>test</scope>
+		</dependency>
+		<!--<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>24.1.1-jre</version>
 			<scope>test</scope>
 		</dependency>-->
 		

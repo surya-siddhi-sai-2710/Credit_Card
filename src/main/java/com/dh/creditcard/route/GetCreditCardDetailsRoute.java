@@ -20,7 +20,7 @@ public class GetCreditCardDetailsRoute extends RouteBuilder{
 		.post("/v1/getdetails")
 		.type(GetCreditCardRequest.class)
 		.consumes("application/json")
-		.to("direct:GetDetails");
+		.to("direct:getDetails");
 		
 		onException(Exception.class)
 		.log("inside exception")
@@ -28,16 +28,10 @@ public class GetCreditCardDetailsRoute extends RouteBuilder{
 		.log("Exception"+"${exception}").handled(true)
 		.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(500));
 		
-		from("direct:GetDetails")
+		from("direct:getDetails").routeId("getDetails")
 		
 		.to("bean:creditCardService?method=prepareCreditCardRequest")
 		
-//		.log("log 1- ${body}")
-//		.marshal().json(JsonLibrary.Jackson)
-//		.log("log 2 - ${body}")
-//		.to("http://localhost:8082/getdetails?bridgeEndpoint=true")
-//		.log("log 3 - ${body}")
-//		.to("bean:creditCardService?method=prepareCreditCardResponse")
 		.marshal().json(JsonLibrary.Jackson)
 		
 		.choice()
