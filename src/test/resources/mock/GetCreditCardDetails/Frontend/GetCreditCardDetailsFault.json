@@ -1,0 +1,6 @@
+{
+	"CreditCardDetailsRequest": {
+		"cardNumber": 100001153,
+		"cardType": "master"
+	}
+}

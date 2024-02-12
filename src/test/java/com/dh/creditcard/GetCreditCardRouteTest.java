@@ -35,7 +35,7 @@ import com.google.common.io.Resources;
 @SpringBootApplication
 @WebAppConfiguration
 
-@MockEndpointsAndSkip("http://localhost:8081/api/connector/configstore")
+@MockEndpointsAndSkip("{{configStoreConnector.host}}{{configStoreConnector.contextPath}} | {{CreditCard.host}}{{CreditCard.contextPath}}getdetails?bridgeEndpoint=true")
 
 @ImportResource({ "classpath:spring/camel-context.xml" })
 @PropertySource("classpath:application-test.properties")
@@ -52,14 +52,14 @@ public class GetCreditCardRouteTest {
 	@Autowired
 	ProducerTemplate producerTemplate;
 
-	@EndpointInject("mock://http://localhost:8082/getdetails?bridgeEndpoint=true")
+	@EndpointInject("mock://{{CreditCard.host}}{{CreditCard.contextPath}}getdetails?bridgeEndpoint=true")
 	private MockEndpoint cdmockEndpoint;
 	
-	@EndpointInject("mock://http://localhost:8081/api/connector/configstore")
+	@EndpointInject("mock://{{configStoreConnector.host}}{{configStoreConnector.contextPath}}")
     private MockEndpoint configStore;
 	
 	@Test
-	public void getCreditCardDetailsTest() throws Exception {
+	public void getCreditCardDetailsSuccessTest() throws Exception {
 
 		String getDetailsRequest = Resources.toString(
 				Resources.getResource("mock/GetCreditCardDetails/Frontend/GetCreditCardDetails.json"), Charsets.UTF_8);
@@ -103,5 +103,139 @@ public class GetCreditCardRouteTest {
 		
 	 
 	}
+	
+	@Test
+	public void getCreditCardDetailsFaultTest() throws Exception {
+		
+		String getDetailsRequest = Resources.toString(
+				Resources.getResource("mock/GetCreditCardDetails/Frontend/GetCreditCardDetailsFault.json"), Charsets.UTF_8);
 
+		String ApplicationErrorConfigStore  = Resources.toString(
+				Resources.getResource("mock/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
+		
+		String getDetailsRespose = Resources.toString(
+				Resources.getResource("mock/GetCreditCardDetails/Backend/GetCreditCardFaultResponse.json"),
+				Charsets.UTF_8);
+		
+		AdviceWith.adviceWith(camelContext,"getDetails",routeBuilder->
+
+		{
+			routeBuilder.replaceFromWith("direct:getDetails");
+		});
+		
+		cdmockEndpoint.expectedMessageCount(1);
+		cdmockEndpoint.whenAnyExchangeReceived(new Processor() {
+			public void process(Exchange exchange) throws Exception {
+				exchange.getMessage().setBody(getDetailsRespose);
+			}
+		});
+		
+		configStore.expectedMessageCount(1);
+		configStore.whenAnyExchangeReceived(new Processor() {
+			public void process(Exchange exchange) throws Exception {
+				exchange.getMessage().setBody(ApplicationErrorConfigStore);
+			}
+		});
+		
+		camelContext.start();
+		
+		GetCreditCardRequest oGetCreditCardRequest = objectMapper.readValue(getDetailsRequest, GetCreditCardRequest.class);
+		
+		String faultResponse = producerTemplate.requestBody("direct:getDetails", oGetCreditCardRequest, String.class);
+	
+		System.out.println("Fault response: " + faultResponse);
+		
+		Assertions.assertTrue(faultResponse.contains("fault"));
+	}
+	
+	@Test
+	public void getCreditCardDetailsMissingAccNoTest() throws Exception {
+		
+		String getDetailsRequest = Resources.toString(
+				Resources.getResource("mock/GetCreditCardDetails/Frontend/GetCreditCardMissingAccno.json"), Charsets.UTF_8);
+
+		String ApplicationErrorConfigStore  = Resources.toString(
+				Resources.getResource("mock/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
+		
+		String getDetailsRespose = Resources.toString(
+				Resources.getResource("mock/GetCreditCardDetails/Backend/GetCreditCardMissingAccNoResponse.json"),
+				Charsets.UTF_8);
+		
+		AdviceWith.adviceWith(camelContext,"getDetails",routeBuilder->
+
+		{
+			routeBuilder.replaceFromWith("direct:getDetails");
+		});
+		
+		cdmockEndpoint.expectedMessageCount(1);
+		cdmockEndpoint.whenAnyExchangeReceived(new Processor() {
+			public void process(Exchange exchange) throws Exception {
+				exchange.getMessage().setBody(getDetailsRespose);
+			}
+		});
+		
+		configStore.expectedMessageCount(1);
+		configStore.whenAnyExchangeReceived(new Processor() {
+			public void process(Exchange exchange) throws Exception {
+				exchange.getMessage().setBody(ApplicationErrorConfigStore);
+			}
+		});
+		
+		camelContext.start();
+		
+		GetCreditCardRequest oGetCreditCardRequest = objectMapper.readValue(getDetailsRequest, GetCreditCardRequest.class);
+		
+		String missingAccno = producerTemplate.requestBody("direct:getDetails", oGetCreditCardRequest, String.class);
+	
+		System.out.println("Missing Accno : " + missingAccno);
+		
+		Assertions.assertTrue(missingAccno.contains("Record not found"));
+	}
+
+//	@Test
+//	public void getCreditCardDetailsMissingCardTypeTest() throws Exception {
+//		
+//		String getDetailsRequest = Resources.toString(
+//				Resources.getResource("mock/GetCreditCardDetails/Frontend/GetCreditCardMissingCardType.json"), Charsets.UTF_8);
+//
+//		String ApplicationErrorConfigStore  = Resources.toString(
+//				Resources.getResource("mock/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
+//		
+//		String getDetailsRespose = Resources.toString(
+//				Resources.getResource("mock/GetCreditCardDetails/Backend/GetCreditCardMissingCardTypeResponse.json"),
+//				Charsets.UTF_8);
+//		
+//		AdviceWith.adviceWith(camelContext,"getDetails",routeBuilder->
+//
+//		{
+//			routeBuilder.replaceFromWith("direct:getDetails");
+//		});
+//		
+//		cdmockEndpoint.expectedMessageCount(1);
+//		cdmockEndpoint.whenAnyExchangeReceived(new Processor() {
+//			public void process(Exchange exchange) throws Exception {
+//				exchange.getMessage().setBody(getDetailsRespose);
+//			}
+//		});
+//		
+//		configStore.expectedMessageCount(1);
+//		configStore.whenAnyExchangeReceived(new Processor() {
+//			public void process(Exchange exchange) throws Exception {
+//				exchange.getMessage().setBody(ApplicationErrorConfigStore);
+//			}
+//		});
+//		
+//		camelContext.start();
+//		
+//		GetCreditCardRequest oGetCreditCardRequest = objectMapper.readValue(getDetailsRequest, GetCreditCardRequest.class);
+//		
+//		String missingCardType = producerTemplate.requestBody("direct:getDetails", oGetCreditCardRequest, String.class);
+//	
+//		System.out.println("Missing CardType: " + missingCardType);
+//		
+//		Assertions.assertTrue(missingCardType.contains("Record not found"));
+//	}
+	
+	
+	
 }

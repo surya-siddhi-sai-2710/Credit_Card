@@ -36,7 +36,7 @@ public class GetCreditCardDetailsRoute extends RouteBuilder{
 		
 		.choice()
 		.when().jsonpath("$.CreditCardDetailsRequest[?(@.cardNumber != 0 && @.cardType != null)]")
-			.to("http://localhost:8082/getdetails?bridgeEndpoint=true")
+			.to("{{CreditCard.host}}{{CreditCard.contextPath}}getdetails?bridgeEndpoint=true")
 			.to("bean:creditCardService?method=prepareCreditCardResponse")
 		.otherwise()
 				.to("bean:utils?method=prepareFaultNodeStr(\"CreditCardResponse\",\"RECORDNOTFOUND\",\"\",\"\",\"\",\"sysOrAppWithoutBkndError\",${exchange})")

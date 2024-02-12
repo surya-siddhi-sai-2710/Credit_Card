@@ -31,7 +31,7 @@ import com.google.common.io.Resources;
 @SpringBootApplication
 @WebAppConfiguration
 
-@MockEndpointsAndSkip("http://localhost:8081/api/connector/configstore")
+@MockEndpointsAndSkip("{{configStoreConnector.host}}{{configStoreConnector.contextPath}} | {{CreditCard.host}}{{CreditCard.contextPath}}getdetails?bridgeEndpoint=true")
 
 @ImportResource({ "classpath:spring/camel-context.xml" })
 @PropertySource("classpath:application-test.properties")
@@ -48,14 +48,14 @@ public class NewCreditCardRouteTest {
 	@Autowired
 	ProducerTemplate producerTemplate;
 	
-	@EndpointInject("mock:http://localhost:8082/newcreditcard?bridgeEndpoint=true")
+	@EndpointInject("mock://{{CreditCard.host}}{{CreditCard.contextPath}}newcreditcard?bridgeEndpoint=true")
 	private MockEndpoint cdmockEndpoint;
 	
-	@EndpointInject("mock:http://localhost:8081/api/connector/configstore")
+	@EndpointInject("mock://{{configStoreConnector.host}}{{configStoreConnector.contextPath}}")
     private MockEndpoint configStore;
 	
 	@Test
-	public void newCreditCardTest() throws Exception{
+	public void newCreditCardSuccessTest() throws Exception{
 		
 		String getNewCreditCardRequest = Resources.toString(
 				Resources.getResource("mock/NewCreditCard/frontend/NewCreditCardRequest.json"), Charsets.UTF_8);
@@ -93,6 +93,91 @@ public class NewCreditCardRouteTest {
 		
 		NewCreditCardResponse response = producerTemplate.requestBody("direct:newCreditCard", oNewCreditCardRequest, NewCreditCardResponse.class);
 		
-		Assertions.assertNotNull(response.getNewCreditCardResponse().getAccNo());
+		Assertions.assertNotNull(response.getNewCreditCardResponse().getCardDetails().getCardNumber());
+	}
+	
+	
+	@Test
+	public void newCreditCardFaultTest() throws Exception{
+		
+		String getNewCreditCardRequest = Resources.toString(
+				Resources.getResource("mock/NewCreditCard/frontend/NewCreditCardRequestFault.json"), Charsets.UTF_8);
+		
+		String ApplicationErrorConfigStore  = Resources.toString(
+				Resources.getResource("mock/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
+		
+		String getNewCreditCardRespose = Resources.toString(
+				Resources.getResource("mock/NewCreditCard/backend/NewCreditCardFaultResponse.json"),
+				Charsets.UTF_8);
+		
+		AdviceWith.adviceWith(camelContext,"newCreditCard",routeBuilder->
+
+		{
+			routeBuilder.replaceFromWith("direct:newCreditCard");
+		});
+		
+		cdmockEndpoint.expectedMessageCount(1);
+		cdmockEndpoint.whenAnyExchangeReceived(new Processor() {
+			public void process(Exchange exchange) throws Exception {
+				exchange.getMessage().setBody(getNewCreditCardRespose);
+			}
+		});
+		
+		configStore.expectedMessageCount(1);
+		configStore.whenAnyExchangeReceived(new Processor() {
+			public void process(Exchange exchange) throws Exception {
+				exchange.getMessage().setBody(ApplicationErrorConfigStore);
+			}
+		});
+		
+		camelContext.start();
+		
+		NewCreditCardRequest oNewCreditCardRequest = objectMapper.readValue(getNewCreditCardRequest, NewCreditCardRequest.class);
+		
+		String fault = producerTemplate.requestBody("direct:newCreditCard", oNewCreditCardRequest, String.class);
+		
+		Assertions.assertNotNull(fault.contains("Record not found"));
+	}
+	
+	@Test
+	public void newCreditCardMissingParametersTest() throws Exception{
+		
+		String getNewCreditCardRequest = Resources.toString(
+				Resources.getResource("mock/NewCreditCard/frontend/NewCreditCardMissingRequest.json"), Charsets.UTF_8);
+		
+		String ApplicationErrorConfigStore  = Resources.toString(
+				Resources.getResource("mock/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
+		
+		String getNewCreditCardRespose = Resources.toString(
+				Resources.getResource("mock/NewCreditCard/backend/NewCreditCardMissingResponse.json"),
+				Charsets.UTF_8);
+		
+		AdviceWith.adviceWith(camelContext,"newCreditCard",routeBuilder->
+
+		{
+			routeBuilder.replaceFromWith("direct:newCreditCard");
+		});
+		
+		cdmockEndpoint.expectedMessageCount(1);
+		cdmockEndpoint.whenAnyExchangeReceived(new Processor() {
+			public void process(Exchange exchange) throws Exception {
+				exchange.getMessage().setBody(getNewCreditCardRespose);
+			}
+		});
+		
+		configStore.expectedMessageCount(1);
+		configStore.whenAnyExchangeReceived(new Processor() {
+			public void process(Exchange exchange) throws Exception {
+				exchange.getMessage().setBody(ApplicationErrorConfigStore);
+			}
+		});
+		
+		camelContext.start();
+		
+		NewCreditCardRequest oNewCreditCardRequest = objectMapper.readValue(getNewCreditCardRequest, NewCreditCardRequest.class);
+		
+		String missingFields = producerTemplate.requestBody("direct:newCreditCard", oNewCreditCardRequest, String.class);
+		
+		Assertions.assertNotNull(missingFields.contains("Record not found"));
 	}
 }

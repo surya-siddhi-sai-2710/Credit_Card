@@ -59,7 +59,7 @@ public class NewCreditCardRouteBuilder extends RouteBuilder{
 					.when().jsonpath("$.NewCreditCardRequest.NewCustomer[?( @.CardDetails.salary == 0)]")
 						.to("bean:utils?method=prepareFaultNodeStr(\"NewCreditCardResponse\",\"INCORRECTVALUE\",\"\",\"\",\"\",\"sysOrAppWithoutBkndError\",${exchange})")
 			.otherwise()
-					.to("http://localhost:8082/newcreditcard?bridgeEndpoint=true")
+					.to("{{CreditCard.host}}{{CreditCard.contextPath}}newcreditcard?bridgeEndpoint=true")
 					.to("bean:newCreditCardService?method=prepareNewCreditCardResponse")
 //		.otherwise()
 //					.to("bean:utils?method=prepareFaultNodeStr(${body},\"NewCreditCardResponse\",${exchange})")

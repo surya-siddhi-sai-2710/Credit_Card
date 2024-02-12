@@ -24,7 +24,7 @@ spring:
             max-pool-size: ${UCP_POOL_CONN_MAX_POOL_SIZE:10}
             min-pool-size: ${UCP_POOL_CONN_MIN_POOL_SIZE:5}
             sql-for-validate-connection: 'select * from dual'
-            
+
 camel:
   springboot:
     name: Rest-API-Endpoints-Frontend-Backend-Mapping
@@ -36,3 +36,16 @@ camel:
 
 server:
   port: 8080
+  
+CreditCard:
+  host: ${CREDITCARD_HOST}
+  contextPath: ${CREDITCARD_CONTEXTPATH}
+
+configStoreConnector:
+  apiKeyName: configstore
+  host: ${CONFIGSTORECONNECTOR_HOST}
+  contextPath: ${CONFIGSTORECONNECTOR_CONTEXTPATH} 
+
+encryption:
+  apiKeyName: encryption_handler
+  secretKey: ${ENCRYPTION_SECRET_KEY}
