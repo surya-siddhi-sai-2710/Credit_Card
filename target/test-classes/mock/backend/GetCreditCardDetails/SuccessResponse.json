@@ -1,0 +1,22 @@
+{
+	"CreditCardResponse": {
+		"accno": 1,
+		"name": "John Doe",
+		"age": 30,
+		"phonenumber": "1234567890",
+		"dob": "1992-05-15",
+		"city": "New York",
+		"pincode": "12345",
+		"cardnumber": 1100001153,
+		"cardtype": "Master",
+		"creditlimit": 5000,
+		"holdername": "John",
+		"status": "Active",
+		"cibilscore": 750,
+		"branchno": 101,
+		"deliverymethod": "Express",
+		"employeeid": 1001,
+		"salary": 60000,
+		"response": "Approved"
+	}
+}
