@@ -33,37 +33,21 @@ public class NewCreditCardRouteBuilder extends RouteBuilder{
 		.to("bean:newCreditCardService?method=prepareNewCreditCardRequest")
 		
 		.marshal().json(JsonLibrary.Jackson)
-		
+		.log("${body}")
 		.choice()
 			// check accNo
-			.when().jsonpath("$.NewCreditCardRequest.NewCustomer[?(@.accNo == 0 || @.accNo < 100000)]")
+			.when().jsonpath("$.NewCreditCardRequest.NewCustomer[?(@.accNo == 0 || @.accNo < 100000 || @.accNo == '' || @.name == null || @.name == '' || @.phoneNumber == null || @.phoneNumber == '')]")
 					.to("bean:utils?method=prepareFaultNodeStr(\"NewCreditCardResponse\",\"INCORRECTVALUE\",\"\",\"\",\"\",\"sysOrAppWithoutBkndError\",${exchange})")
 			.otherwise()
-			
-			// check name
-					.when().jsonpath("$.NewCreditCardRequest.NewCustomer[?(@.name == null || @.name == '')]")
+					.when().jsonpath("$.NewCreditCardRequest.NewCustomer[?(@.CardDetails.cibilScore == 0 ||  @.CardDetails.salary == 0)]")
 						.to("bean:utils?method=prepareFaultNodeStr(\"NewCreditCardResponse\",\"INCORRECTVALUE\",\"\",\"\",\"\",\"sysOrAppWithoutBkndError\",${exchange})")
-			.otherwise()
-			
-			// check phoneNumber
-					.when().jsonpath("$.NewCreditCardRequest.NewCustomer[?(@.phoneNumber == null || @.phoneNumber == '')]")
-						.to("bean:utils?method=prepareFaultNodeStr(\"NewCreditCardResponse\",\"INCORRECTVALUE\",\"\",\"\",\"\",\"sysOrAppWithoutBkndError\",${exchange})")
-			.otherwise()
-			
-			// check cibilScore
-					.when().jsonpath("$.NewCreditCardRequest.NewCustomer[?(@.CardDetails.cibilScore == 0)]")
-						.to("bean:utils?method=prepareFaultNodeStr(\"NewCreditCardResponse\",\"INCORRECTVALUE\",\"\",\"\",\"\",\"sysOrAppWithoutBkndError\",${exchange})")
-			.otherwise()
-			
-			// check salary
-					.when().jsonpath("$.NewCreditCardRequest.NewCustomer[?( @.CardDetails.salary == 0)]")
-						.to("bean:utils?method=prepareFaultNodeStr(\"NewCreditCardResponse\",\"INCORRECTVALUE\",\"\",\"\",\"\",\"sysOrAppWithoutBkndError\",${exchange})")
-			.otherwise()
-					.to("{{CreditCard.host}}{{CreditCard.contextPath}}newcreditcard?bridgeEndpoint=true")
-					.to("bean:newCreditCardService?method=prepareNewCreditCardResponse")
-//		.otherwise()
-//					.to("bean:utils?method=prepareFaultNodeStr(${body},\"NewCreditCardResponse\",${exchange})")
-				.endChoice()
+					.otherwise()
+						.to("{{CreditCard.host}}{{CreditCard.contextPath}}newcreditcard?bridgeEndpoint=true")
+					.choice().when().simple("${body} != null")
+						.to("bean:newCreditCardService?method=prepareNewCreditCardResponse")
+					.otherwise()
+						.to("bean:utils?method=prepareFaultNodeStr(\"NewCreditCardResponse\",\"MANDATORYVALUE\",\"\",\"\",\"\",\"sysOrAppWithoutBkndError\",${exchange})")
+					.endChoice()
 		.end();
 	}
 }

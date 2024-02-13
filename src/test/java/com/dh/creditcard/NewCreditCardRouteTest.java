@@ -58,13 +58,13 @@ public class NewCreditCardRouteTest {
 	public void newCreditCardSuccessTest() throws Exception{
 		
 		String getNewCreditCardRequest = Resources.toString(
-				Resources.getResource("mock/NewCreditCard/frontend/NewCreditCardRequest.json"), Charsets.UTF_8);
+				Resources.getResource("mock/frontend/NewCreditCard/SuccessRequest.json"), Charsets.UTF_8);
 		
 		String ApplicationErrorConfigStore  = Resources.toString(
-				Resources.getResource("mock/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
+				Resources.getResource("mock/frontend/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
 		
 		String getNewCreditCardRespose = Resources.toString(
-				Resources.getResource("mock/NewCreditCard/backend/NewCreditCardResponse.json"),
+				Resources.getResource("mock/backend/NewCreditCard/SuccessResponse.json"),
 				Charsets.UTF_8);
 		
 		AdviceWith.adviceWith(camelContext,"newCreditCard",routeBuilder->
@@ -101,13 +101,13 @@ public class NewCreditCardRouteTest {
 	public void newCreditCardFaultTest() throws Exception{
 		
 		String getNewCreditCardRequest = Resources.toString(
-				Resources.getResource("mock/NewCreditCard/frontend/NewCreditCardRequestFault.json"), Charsets.UTF_8);
+				Resources.getResource("mock/frontend/NewCreditCard/FaultRequest.json"), Charsets.UTF_8);
 		
 		String ApplicationErrorConfigStore  = Resources.toString(
-				Resources.getResource("mock/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
+				Resources.getResource("mock/frontend/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
 		
 		String getNewCreditCardRespose = Resources.toString(
-				Resources.getResource("mock/NewCreditCard/backend/NewCreditCardFaultResponse.json"),
+				Resources.getResource("mock/backend/NewCreditCard/FaultResponse.json"),
 				Charsets.UTF_8);
 		
 		AdviceWith.adviceWith(camelContext,"newCreditCard",routeBuilder->
@@ -140,16 +140,16 @@ public class NewCreditCardRouteTest {
 	}
 	
 	@Test
-	public void newCreditCardMissingParametersTest() throws Exception{
+	public void newCreditCardMissingNameTest() throws Exception{
 		
 		String getNewCreditCardRequest = Resources.toString(
-				Resources.getResource("mock/NewCreditCard/frontend/NewCreditCardMissingRequest.json"), Charsets.UTF_8);
+				Resources.getResource("mock/frontend/NewCreditCard/MissingName.json"), Charsets.UTF_8);
 		
 		String ApplicationErrorConfigStore  = Resources.toString(
-				Resources.getResource("mock/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
+				Resources.getResource("mock/frontend/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
 		
 		String getNewCreditCardRespose = Resources.toString(
-				Resources.getResource("mock/NewCreditCard/backend/NewCreditCardMissingResponse.json"),
+				Resources.getResource("mock/backend/NewCreditCard/FaultResponse.json"),
 				Charsets.UTF_8);
 		
 		AdviceWith.adviceWith(camelContext,"newCreditCard",routeBuilder->
@@ -176,8 +176,50 @@ public class NewCreditCardRouteTest {
 		
 		NewCreditCardRequest oNewCreditCardRequest = objectMapper.readValue(getNewCreditCardRequest, NewCreditCardRequest.class);
 		
-		String missingFields = producerTemplate.requestBody("direct:newCreditCard", oNewCreditCardRequest, String.class);
+		String missingName = producerTemplate.requestBody("direct:newCreditCard", oNewCreditCardRequest, String.class);
 		
-		Assertions.assertNotNull(missingFields.contains("Record not found"));
+		Assertions.assertNotNull(missingName.contains("Incorrect value"));
+	}
+	
+	@Test
+	public void newCreditCardMissingCibilScoreTest() throws Exception{
+		
+		String getNewCreditCardRequest = Resources.toString(
+				Resources.getResource("mock/frontend/NewCreditCard/MissingCibilSCore.json"), Charsets.UTF_8);
+		
+		String ApplicationErrorConfigStore  = Resources.toString(
+				Resources.getResource("mock/frontend/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
+		
+		String getNewCreditCardRespose = Resources.toString(
+				Resources.getResource("mock/backend/NewCreditCard/FaultResponse.json"),
+				Charsets.UTF_8);
+		
+		AdviceWith.adviceWith(camelContext,"newCreditCard",routeBuilder->
+
+		{
+			routeBuilder.replaceFromWith("direct:newCreditCard");
+		});
+		
+		cdmockEndpoint.expectedMessageCount(1);
+		cdmockEndpoint.whenAnyExchangeReceived(new Processor() {
+			public void process(Exchange exchange) throws Exception {
+				exchange.getMessage().setBody(getNewCreditCardRespose);
+			}
+		});
+		
+		configStore.expectedMessageCount(1);
+		configStore.whenAnyExchangeReceived(new Processor() {
+			public void process(Exchange exchange) throws Exception {
+				exchange.getMessage().setBody(ApplicationErrorConfigStore);
+			}
+		});
+		
+		camelContext.start();
+		
+		NewCreditCardRequest oNewCreditCardRequest = objectMapper.readValue(getNewCreditCardRequest, NewCreditCardRequest.class);
+		
+		String missingCibilScore = producerTemplate.requestBody("direct:newCreditCard", oNewCreditCardRequest, String.class);
+		
+		Assertions.assertNotNull(missingCibilScore.contains("Incorrect value"));
 	}
 }

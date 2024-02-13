@@ -35,11 +35,18 @@ public class GetCreditCardDetailsRoute extends RouteBuilder{
 		.marshal().json(JsonLibrary.Jackson)
 		
 		.choice()
-		.when().jsonpath("$.CreditCardDetailsRequest[?(@.cardNumber != 0 && @.cardType != null)]")
+		.when().jsonpath("$.CreditCardDetailsRequest[?(@.cardNumber != 0 && @.cardType != null && @.cardType != '')]")
+			
 			.to("{{CreditCard.host}}{{CreditCard.contextPath}}getdetails?bridgeEndpoint=true")
-			.to("bean:creditCardService?method=prepareCreditCardResponse")
+			.log("from db - ${body}")
+			.choice()
+				.when().simple("${body} != null")
+					.to("bean:creditCardService?method=prepareCreditCardResponse")
+				.otherwise()
+					.to("bean:utils?method=prepareFaultNodeStr(\"CreditCardResponse\",\"RECORDNOTFOUND\",\"\",\"\",\"\",\"sysOrAppWithoutBkndError\",${exchange})")
+				.endChoice()
 		.otherwise()
-				.to("bean:utils?method=prepareFaultNodeStr(\"CreditCardResponse\",\"RECORDNOTFOUND\",\"\",\"\",\"\",\"sysOrAppWithoutBkndError\",${exchange})")
+				.to("bean:utils?method=prepareFaultNodeStr(\"CreditCardResponse\",\"MANDATORYVALUE\",\"\",\"\",\"\",\"sysOrAppWithoutBkndError\",${exchange})")
 		.end();
 
 	}

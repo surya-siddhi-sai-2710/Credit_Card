@@ -62,13 +62,13 @@ public class GetCreditCardRouteTest {
 	public void getCreditCardDetailsSuccessTest() throws Exception {
 
 		String getDetailsRequest = Resources.toString(
-				Resources.getResource("mock/GetCreditCardDetails/Frontend/GetCreditCardDetails.json"), Charsets.UTF_8);
+				Resources.getResource("mock/frontend/GetCreditCardDetails/SuccessRequest.json"), Charsets.UTF_8);
 
 		String ApplicationErrorConfigStore  = Resources.toString(
-				Resources.getResource("mock/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
+				Resources.getResource("mock/frontend/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
 		
 		String getDetailsRespose = Resources.toString(
-				Resources.getResource("mock/GetCreditCardDetails/Backend/GetCreditCardDetailsResponse.json"),
+				Resources.getResource("mock/backend/GetCreditCardDetails/SuccessResponse.json"),
 				Charsets.UTF_8);
 		
 		AdviceWith.adviceWith(camelContext,"getDetails",routeBuilder->
@@ -108,13 +108,13 @@ public class GetCreditCardRouteTest {
 	public void getCreditCardDetailsFaultTest() throws Exception {
 		
 		String getDetailsRequest = Resources.toString(
-				Resources.getResource("mock/GetCreditCardDetails/Frontend/GetCreditCardDetailsFault.json"), Charsets.UTF_8);
+				Resources.getResource("mock/frontend/GetCreditCardDetails/FaultRequest.json"), Charsets.UTF_8);
 
 		String ApplicationErrorConfigStore  = Resources.toString(
-				Resources.getResource("mock/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
+				Resources.getResource("mock/frontend/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
 		
 		String getDetailsRespose = Resources.toString(
-				Resources.getResource("mock/GetCreditCardDetails/Backend/GetCreditCardFaultResponse.json"),
+				Resources.getResource("mock/backend/GetCreditCardDetails/FaultResponse.json"),
 				Charsets.UTF_8);
 		
 		AdviceWith.adviceWith(camelContext,"getDetails",routeBuilder->
@@ -145,20 +145,20 @@ public class GetCreditCardRouteTest {
 	
 		System.out.println("Fault response: " + faultResponse);
 		
-		Assertions.assertTrue(faultResponse.contains("fault"));
+		Assertions.assertTrue(faultResponse.contains("Record not found"));
 	}
 	
 	@Test
 	public void getCreditCardDetailsMissingAccNoTest() throws Exception {
 		
 		String getDetailsRequest = Resources.toString(
-				Resources.getResource("mock/GetCreditCardDetails/Frontend/GetCreditCardMissingAccno.json"), Charsets.UTF_8);
+				Resources.getResource("mock/frontend/GetCreditCardDetails/MissingParameters.json"), Charsets.UTF_8);
 
 		String ApplicationErrorConfigStore  = Resources.toString(
-				Resources.getResource("mock/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
+				Resources.getResource("mock/frontend/configStore/ConfigStoreResponse_Application_Errors.json"), Charsets.UTF_8);
 		
 		String getDetailsRespose = Resources.toString(
-				Resources.getResource("mock/GetCreditCardDetails/Backend/GetCreditCardMissingAccNoResponse.json"),
+				Resources.getResource("mock/backend/GetCreditCardDetails/FaultResponse.json"),
 				Charsets.UTF_8);
 		
 		AdviceWith.adviceWith(camelContext,"getDetails",routeBuilder->
@@ -189,7 +189,7 @@ public class GetCreditCardRouteTest {
 	
 		System.out.println("Missing Accno : " + missingAccno);
 		
-		Assertions.assertTrue(missingAccno.contains("Record not found"));
+		Assertions.assertTrue(missingAccno.contains("Mandatory Value is missing"));
 	}
 
 //	@Test

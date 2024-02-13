@@ -1,9 +1,0 @@
-{
-	"NewCreditCardResponse": {
-		"accNO": 0,
-		"cardNumber": 0,
-		"cardType": "",
-		"status": "",
-		"response": ""
-	}
-}
