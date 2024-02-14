@@ -2,6 +2,7 @@ package com.dh.creditcard.route;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ public class GetCreditCardDetailsRoute extends RouteBuilder{
 		restConfiguration()
 		.bindingMode(RestBindingMode.json);
 		rest()
-		.post("/v1/getdetails")
+		.post("api/v1/GetDetails")
 		.type(GetCreditCardRequest.class)
 		.consumes("application/json")
 		.to("direct:getDetails");
@@ -32,13 +33,14 @@ public class GetCreditCardDetailsRoute extends RouteBuilder{
 		
 		.to("bean:creditCardService?method=prepareCreditCardRequest")
 		
-		.marshal().json(JsonLibrary.Jackson)
+//		.marshal().json(JsonLibrary.Jackson)
+		.marshal(new JacksonDataFormat(GetCreditCardRequest.class))
 		
 		.choice()
-		.when().jsonpath("$.CreditCardDetailsRequest[?(@.cardNumber != 0 && @.cardType != null && @.cardType != '')]")
+		.when().jsonpath("$.CreditCardDetailsRequest[?(@.cardNumber != 0 && @.cardNumber != '' && @.cardType != null && @.cardType != '')]")
 			
-			.to("{{CreditCard.host}}{{CreditCard.contextPath}}getdetails?bridgeEndpoint=true")
-			.log("from db - ${body}")
+			.to("{{creditCardMock.host}}{{creditCardMock.contextPath}}GetDetails?bridgeEndpoint=true")
+//			.to("{{CreditCard.host}}{{CreditCard.contextPath}}getdetails?bridgeEndpoint=true")
 			.choice()
 				.when().simple("${body} != null")
 					.to("bean:creditCardService?method=prepareCreditCardResponse")
@@ -46,7 +48,7 @@ public class GetCreditCardDetailsRoute extends RouteBuilder{
 					.to("bean:utils?method=prepareFaultNodeStr(\"CreditCardResponse\",\"RECORDNOTFOUND\",\"\",\"\",\"\",\"sysOrAppWithoutBkndError\",${exchange})")
 				.endChoice()
 		.otherwise()
-				.to("bean:utils?method=prepareFaultNodeStr(\"CreditCardResponse\",\"MANDATORYVALUE\",\"\",\"\",\"\",\"sysOrAppWithoutBkndError\",${exchange})")
+				.to("bean:utils?method=prepareFaultNodeStr(\"CreditCardResponse\",\"MANDATORYVALUE\",\"\",\"\",\"\",\"validations\",${exchange})")
 		.end();
 
 	}

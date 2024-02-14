@@ -1,9 +1,0 @@
-{
-	"NewCreditCardResponse": {
-		"accNO": 101121,
-		"cardNumber": 1100001169,
-		"cardType": "AmazonPay_ICICI_CreditCard",
-		"status": "InActive",
-		"response": "Declined"
-	}
-}

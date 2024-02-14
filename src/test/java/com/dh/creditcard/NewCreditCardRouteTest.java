@@ -31,7 +31,7 @@ import com.google.common.io.Resources;
 @SpringBootApplication
 @WebAppConfiguration
 
-@MockEndpointsAndSkip("{{configStoreConnector.host}}{{configStoreConnector.contextPath}} | {{CreditCard.host}}{{CreditCard.contextPath}}getdetails?bridgeEndpoint=true")
+@MockEndpointsAndSkip("{{configStoreConnector.host}}{{configStoreConnector.contextPath}} | {{newCreditCardMock.host}}{{newCreditCardMock.contextPath}}NewCreditCard?bridgeEndpoint=true")
 
 @ImportResource({ "classpath:spring/camel-context.xml" })
 @PropertySource("classpath:application-test.properties")
@@ -48,7 +48,7 @@ public class NewCreditCardRouteTest {
 	@Autowired
 	ProducerTemplate producerTemplate;
 	
-	@EndpointInject("mock://{{CreditCard.host}}{{CreditCard.contextPath}}newcreditcard?bridgeEndpoint=true")
+	@EndpointInject("mock:{{newCreditCardMock.host}}{{newCreditCardMock.contextPath}}NewCreditCard?bridgeEndpoint=true")
 	private MockEndpoint cdmockEndpoint;
 	
 	@EndpointInject("mock://{{configStoreConnector.host}}{{configStoreConnector.contextPath}}")
